@@ -1,0 +1,31 @@
+front:
+  build: ./nginx-fpm
+  ports:
+    - "8080:8080"
+  volumes:
+    - ./www:/var/www
+    - ./sites:/etc/nginx/sites-enabled
+  links:
+    - mysql:mysql
+
+mysql:
+  build: ./mariadb
+  ports:
+    - "3306:3306"
+  volumes:
+    - ./database:/var/lib/mysql
+  environment:
+   - DBNAME=demoDb
+   - DBUSER=demoUser
+   - DBPASSWORD=demoPass
+
+varnish:
+  build: ./varnish
+  ports:
+    - "80:80"
+  links:
+    - "front:front"
+  environment:
+   - VARNISH_MEMORY=128m
+   - VARNISH_BACKEND_ADDRESS=front
+   - VARNISH_BACKEND_PORT=8080
